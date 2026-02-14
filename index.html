@@ -3,83 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arcadify</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <title style="font-family: 'Arcade', sans-serif;">Arcadify</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
     <style>
         body {
-            margin: 0;
+            background: linear-gradient(135deg, #1f1c2c, #928DAB);
             font-family: 'Press Start 2P', cursive;
-            background-color: #0d0d0d;
-            color: #fff;
+            color: white;
+            text-align: center;
+            animation: fadeIn 2s;
         }
-        header {
-            position: sticky;
-            top: 0;
-            background: rgba(30, 30, 30, 0.9);
-            padding: 10px 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
+        h1 {
+            font-size: 3em;
+            margin-top: 20px;
+            animation: bounce 2s infinite;
         }
-        nav ul {
-            list-style-type: none;
-            padding: 0;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        nav ul li {
-            display: inline;
-            margin-right: 15px;
-        }
-        section {
-            padding: 20px;
-            border: 2px solid #f0f;
-            margin: 20px 0;
-            transition: transform 0.3s;
-        }
-        section:hover {
-            transform: scale(1.05);
-            background: rgba(255, 0, 255, 0.1);
-        }
-        .neon {
-            text-shadow: 0 0 5px #00f,
-                         0 0 10px #00f,
-                         0 0 15px #ff00ff,
-                         0 0 20px #ff00ff;
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-30px); }
+            60% { transform: translateY(-15px); }
         }
     </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#games">Games</a></li>
-                <li><a href="#videos">Videos</a></li>
-                <li><a href="#gallery">Gallery</a></li>
-                <li><a href="#features">Features</a></li>
-            </ul>
-        </nav>
-    </header>
-    <section id="home" class="neon">
-        <h1>Welcome to Arcadify</h1>
-    </section>
-    <section id="games">
-        <h2>Games</h2>
-        <p>Explore our vast games collection!</p>
-    </section>
-    <section id="videos">
-        <h2>Videos</h2>
-        <p>Watch our latest game trailers!</p>
-    </section>
-    <section id="gallery">
-        <h2>Gallery</h2>
-        <p>Check out the images from our games!</p>
-    </section>
-    <section id="features">
-        <h2>Features</h2>
-        <p>Discover the features of Arcadify!</p>
-    </section>
-    <script>
-        // Add any interactive elements or animations here 
-    </script>
+    <h1>Welcome to Arcadify!</h1>
+    <p>Experience the ultimate arcade gaming!</p>
 </body>
 </html>
