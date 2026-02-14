@@ -142,6 +142,30 @@
             background: #0d4;
         }
         
+        /* Countdown Overlay */
+        #countdown {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1500;
+            font-size: clamp(60px, 20vw, 120px);
+            color: #0f6;
+            animation: pulse 0.5s ease-in-out;
+        }
+        #countdown.show {
+            display: flex;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
         /* Touch Controls */
         #touchControls {
             display: none;
@@ -261,6 +285,8 @@
         <button id="startButton">START GAME</button>
     </div>
 
+    <div id="countdown"></div>
+
     <div id="gameContainer">
         <h1>🐍 SNAKE</h1>
         <div id="scoreLabel">SCORE</div>
@@ -297,6 +323,7 @@
         const gameContainer = document.getElementById('gameContainer');
         const startScreen = document.getElementById('startScreen');
         const startButton = document.getElementById('startButton');
+        const countdownDisplay = document.getElementById('countdown');
 
         let gameStarted = false;
         let gameRunning = false;
@@ -318,13 +345,35 @@
         let appleX = 15;
         let appleY = 15;
 
+        // Countdown function
+        function startCountdown(callback) {
+            let count = 3;
+            countdownDisplay.textContent = count;
+            countdownDisplay.classList.add('show');
+            
+            const countInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownDisplay.textContent = count;
+                } else if (count === 0) {
+                    countdownDisplay.textContent = 'GO!';
+                } else {
+                    clearInterval(countInterval);
+                    countdownDisplay.classList.remove('show');
+                    callback();
+                }
+            }, 1000);
+        }
+
         // Start button handler
         startButton.addEventListener('click', () => {
             startScreen.classList.add('hidden');
             gameStarted = true;
-            gameRunning = true;
             resetGame();
-            gameLoop();
+            startCountdown(() => {
+                gameRunning = true;
+                gameLoop();
+            });
         });
 
         // Detect touch capability
@@ -573,13 +622,15 @@
         }
 
         function restartGame() {
-            gameRunning = true;
             gameStarted = true;
             gameOverDisplay.style.display = 'none';
             restartButton.style.display = 'none';
             startScreen.classList.add('hidden');
             resetGame();
-            gameLoop();
+            startCountdown(() => {
+                gameRunning = true;
+                gameLoop();
+            });
         }
 
         restartButton.addEventListener('click', restartGame);
