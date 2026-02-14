@@ -102,6 +102,42 @@
         #restartButton:hover {
             background: #0d4;
         }
+        #startScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        #startScreen.hidden {
+            display: none;
+        }
+        #startScreen h2 {
+            font-size: clamp(16px, 5vw, 32px);
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 0 20px;
+        }
+        #startButton {
+            padding: clamp(15px, 4vw, 20px) clamp(30px, 8vw, 50px);
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(12px, 3vw, 16px);
+            background: #0f6;
+            color: black;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        #startButton:hover {
+            background: #0d4;
+        }
         
         /* Touch Controls */
         #touchControls {
@@ -204,6 +240,15 @@
     </style>
 </head>
 <body>
+    <div id="startScreen">
+        <h2>🏓 READY TO PLAY PONG? 🏓</h2>
+        <p style="font-size: clamp(10px, 2.5vw, 14px); margin: 10px 20px; text-align: center; line-height: 1.8;">
+            You vs Computer<br>
+            First to 5 wins!
+        </p>
+        <button id="startButton">START GAME</button>
+    </div>
+
     <div id="gameContainer">
         <h1>🏓 PONG</h1>
         <div id="scoreLabel">YOU vs COMPUTER</div>
@@ -236,6 +281,17 @@
         const restartButton = document.getElementById('restartButton');
         const touchControls = document.getElementById('touchControls');
         const gameContainer = document.getElementById('gameContainer');
+        const startScreen = document.getElementById('startScreen');
+        const startButton = document.getElementById('startButton');
+
+        let gameStarted = false;
+
+        // Start button handler
+        startButton.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            gameStarted = true;
+            gameLoop();
+        });
 
         // Detect touch capability
         function isTouchDevice() {
@@ -494,8 +550,10 @@
             score1 = 0;
             score2 = 0;
             gameRunning = true;
+            gameStarted = true;
             gameOverDisplay.style.display = 'none';
             restartButton.style.display = 'none';
+            startScreen.classList.add('hidden');
             updateScore();
             resetBall();
             gameLoop();
@@ -505,7 +563,7 @@
 
         // Game loop
         function gameLoop() {
-            if (!gameRunning) return;
+            if (!gameRunning || !gameStarted) return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -535,7 +593,7 @@
         // Initialize
         resizeCanvas();
         updateScore();
-        gameLoop();
+        // Don't start game loop - wait for start button click
     </script>
 </body>
 </html>
