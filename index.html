@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
-    <title>Arcadify - Home</title>
+    <title>Arcadify</title>
 </head>
 <body>
-    <header>
-        <nav>
+    <header class="sticky-header">
+        <div class="logo">
+            <h1>Arcadify</h1>
+        </div>
+        <nav class="nav-menu">
             <ul>
                 <li><a href="#home">Home</a></li>
                 <li><a href="#games">Games</a></li>
@@ -17,37 +20,81 @@
             </ul>
         </nav>
     </header>
-    <main>
-        <section id="home">
-            <h1>Welcome to Arcadify</h1>
-            <p>Your ultimate game destination!</p>
-        </section>
-        <section id="games">
-            <h2>Game Showcase</h2>
-            <div class="game">
-                <h3>Game Title 1</h3>
-                <p>A brief description of Game 1.</p>
-            </div>
-            <div class="game">
-                <h3>Game Title 2</h3>
-                <p>A brief description of Game 2.</p>
-            </div>
-            <div class="game">
-                <h3>Game Title 3</h3>
-                <p>A brief description of Game 3.</p>
-            </div>
-        </section>
-        <section id="about">
-            <h2>About Us</h2>
-            <p>Learn more about our journey and mission.</p>
-        </section>
-        <section id="contact">
-            <h2>Contact Us</h2>
-            <p>Get in touch for inquiries.</p>
-        </section>
-    </main>
+    <section id="hero">
+        <h2>Welcome to Arcadify!</h2>
+        <p>Discover and play your favorite games!</p>
+    </section>
+    <section id="games">
+        <h2>Featured Games</h2>
+        <div class="game-showcase">
+            <div class="game-card">Game 1</div>
+            <div class="game-card">Game 2</div>
+            <div class="game-card">Game 3</div>
+        </div>
+    </section>
     <footer>
         <p>&copy; 2026 Arcadify. All rights reserved.</p>
     </footer>
+    <script src="script.js"></script>
 </body>
 </html>
+
+<style>
+body {
+    font-family: 'Arial', sans-serif;
+}
+
+.sticky-header {
+    position: sticky;
+    top: 0;
+    background: #333;
+    color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-menu ul {
+    list-style: none;
+    display: flex;
+}
+
+.nav-menu li {
+    margin: 0 15px;
+}
+
+.nav-menu a {
+    color: white;
+    text-decoration: none;
+}
+
+#hero {
+    padding: 50px;
+    text-align: center;
+    background: #f0f0f0;
+}
+
+.game-showcase {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.game-card {
+    background: #ccc;
+    padding: 20px;
+    margin: 10px;
+}
+
+@media (max-width: 600px) {
+    .nav-menu ul {
+        flex-direction: column;
+    }
+}  
+</style>
+
+<script>
+// JavaScript for interactivity (if needed)
+console.log('Arcadify loaded!');
+</script>
