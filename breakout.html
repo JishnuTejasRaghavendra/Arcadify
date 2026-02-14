@@ -344,7 +344,7 @@
         let brickWidth;
         let brickHeight = 20;
         let brickPadding = 5;
-        let brickOffsetTop = 50;
+        let brickOffsetTop = 80; // Increased from 50 to 80 for more space
         let brickOffsetLeft = 10;
         let bricks = [];
 
@@ -386,7 +386,8 @@
             const maxHeight = window.innerHeight - 380;
             
             canvas.width = maxWidth;
-            canvas.height = Math.min(maxHeight, maxWidth * 1.2); // Maintain aspect ratio
+            // Ensure minimum height of 400px for proper game spacing
+            canvas.height = Math.max(400, Math.min(maxHeight, maxWidth * 1.2));
             
             // Recalculate brick dimensions
             brickWidth = (canvas.width - brickOffsetLeft * 2 - brickPadding * (brickColumnCount - 1)) / brickColumnCount;
@@ -609,7 +610,7 @@
         // Reset ball
         function resetBall() {
             ball.x = canvas.width / 2;
-            ball.y = canvas.height - 100;
+            ball.y = canvas.height - 150; // Spawn much lower, closer to paddle
             ball.dx = ball.speed * (Math.random() > 0.5 ? 1 : -1);
             ball.dy = -ball.speed;
         }
