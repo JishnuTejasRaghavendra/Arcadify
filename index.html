@@ -3,34 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title style="font-family: 'Arcade', sans-serif;">Arcadify</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
-    <style>
-        body {
-            background: linear-gradient(135deg, #1f1c2c, #928DAB);
-            font-family: 'Press Start 2P', cursive;
-            color: white;
-            text-align: center;
-            animation: fadeIn 2s;
-        }
-        h1 {
-            font-size: 3em;
-            margin-top: 20px;
-            animation: bounce 2s infinite;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-30px); }
-            60% { transform: translateY(-15px); }
-        }
-    </style>
+    <title>Arcadify</title>
+    <link href="https://fonts.googleapis.com/css?family=Orbitron" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Welcome to Arcadify!</h1>
-    <p>Experience the ultimate arcade gaming!</p>
+    <header class="sticky-header">
+        <h1>Welcome to Arcadify</h1>
+        <nav>
+            <ul>
+                <li><a href="#games">Games</a></li>
+                <li><a href="#videos">Videos</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#features">Features</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="games">
+            <h2>Games</h2>
+            <div class="game-list">
+                <article class="game">
+                    <h3>Game 1</h3>
+                    <p>Description of Game 1.</p>
+                </article>
+                <article class="game">
+                    <h3>Game 2</h3>
+                    <p>Description of Game 2.</p>
+                </article>
+            </div>
+        </section>
+        <section id="videos">
+            <h2>Videos</h2>
+            <div class="video-list">
+                <video controls>
+                    <source src="video1.mp4" type="video/mp4">
+                </video>
+            </div>
+        </section>
+        <section id="gallery">
+            <h2>Gallery</h2>
+            <div class="gallery-list">
+                <img src="image1.jpg" alt="Gallery Image 1">
+                <img src="image2.jpg" alt="Gallery Image 2">
+            </div>
+        </section>
+        <section id="features">
+            <h2>Features</h2>
+            <ul>
+                <li>Feature 1</li>
+                <li>Feature 2</li>
+            </ul>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2026 Arcadify. All rights reserved.</p>
+    </footer>
+    <script src="script.js"></script>
 </body>
 </html>
