@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Snake Game - Arcadify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: #111;
+            font-family: 'Press Start 2P', cursive;
+            color: white;
+            overflow-x: hidden;
+            position: relative;
+        }
+        #gameContainer {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 5px;
+            padding-bottom: 20px;
+            width: 100%;
+        }
+        #gameContainer.with-touch-controls {
+            padding-bottom: 230px;
+        }
+        h1 {
+            font-size: clamp(14px, 4vw, 24px);
+            margin: 10px 0 5px 0;
+        }
+        #scoreLabel {
+            font-size: clamp(8px, 2vw, 12px);
+            color: #aaa;
+            margin: 5px 0;
+        }
+        #score {
+            font-size: clamp(14px, 4vw, 24px);
+            margin: 5px 0 10px 0;
+        }
+        #canvasWrapper {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+        }
+        canvas {
+            border: 3px solid #0f6;
+            background: #000;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        #instructions {
+            font-size: clamp(8px, 2vw, 12px);
+            line-height: 1.8;
+            margin: 10px 0;
+            padding: 0 10px;
+            text-align: center;
+        }
+        #gameOver {
+            display: none;
+            font-size: clamp(12px, 3vw, 18px);
+            margin: 15px 0;
+            padding: 0 10px;
+            text-align: center;
+            color: #f06;
+        }
+        .button {
+            margin: 10px 5px;
+            padding: clamp(10px, 3vw, 15px) clamp(20px, 5vw, 30px);
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(8px, 2vw, 12px);
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        #backButton {
+            background: #f06;
+            color: white;
+        }
+        #backButton:hover {
+            background: #d04;
+        }
+        #restartButton {
+            display: none;
+            background: #0f6;
+            color: black;
+        }
+        #restartButton:hover {
+            background: #0d4;
+        }
+        
+        /* Start Screen */
+        #startScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        #startScreen.hidden {
+            display: none;
+        }
+        #startScreen h2 {
+            font-size: clamp(16px, 5vw, 32px);
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 0 20px;
+            color: #0f6;
+        }
+        #startButton {
+            padding: clamp(15px, 4vw, 20px) clamp(30px, 8vw, 50px);
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(12px, 3vw, 16px);
+            background: #0f6;
+            color: black;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        #startButton:hover {
+            background: #0d4;
+        }
+        
+        /* Touch Controls */
+        #touchControls {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 3px solid rgba(0, 255, 102, 0.5);
+        }
+        #touchControls.show {
+            display: block;
+        }
+        .touch-grid {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 2px;
+        }
+        .touch-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(32px, 10vw, 60px);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            color: white;
+            font-weight: bold;
+            background: rgba(0, 255, 102, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.1s;
+        }
+        .touch-btn:active {
+            background: rgba(0, 255, 102, 0.4) !important;
+        }
+        .touch-btn.up {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        .touch-btn.left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        .touch-btn.right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+        .touch-btn.down {
+            grid-column: 2;
+            grid-row: 3;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 768px) and (orientation: portrait) {
+            #gameContainer.with-touch-controls {
+                padding-bottom: 210px;
+            }
+        }
+        
+        @media (max-width: 768px) and (orientation: landscape) {
+            #touchControls.show {
+                height: 140px;
+            }
+            #gameContainer.with-touch-controls {
+                padding-bottom: 150px;
+                padding-top: 5px;
+            }
+            h1 {
+                font-size: 14px;
+                margin: 5px 0;
+            }
+            #score, #scoreLabel {
+                font-size: 10px;
+            }
+            #instructions {
+                font-size: 7px;
+                line-height: 1.5;
+                margin: 5px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #touchControls.show {
+                height: 180px;
+            }
+            #gameContainer.with-touch-controls {
+                padding-bottom: 190px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            #touchControls.show {
+                height: 140px;
+            }
+            #gameContainer.with-touch-controls {
+                padding-bottom: 150px;
+                padding-top: 5px;
+            }
+            h1 {
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="startScreen">
+        <h2>🐍 READY TO PLAY SNAKE? 🐍</h2>
+        <p style="font-size: clamp(10px, 2.5vw, 14px); margin: 10px 20px; text-align: center; line-height: 1.8;">
+            Eat apples to grow!<br>
+            Don't hit walls or yourself!
+        </p>
+        <button id="startButton">START GAME</button>
+    </div>
+
+    <div id="gameContainer">
+        <h1>🐍 SNAKE</h1>
+        <div id="scoreLabel">SCORE</div>
+        <div id="score">0</div>
+        <div id="canvasWrapper">
+            <canvas id="snakeCanvas"></canvas>
+        </div>
+        <div id="instructions">
+            Desktop: Arrow keys<br>
+            Mobile: Touch controls below<br>
+            Eat apples to grow!
+        </div>
+        <div id="gameOver"></div>
+        <button id="restartButton" class="button">RESTART</button>
+        <a href="index.html" id="backButton" class="button">← BACK</a>
+    </div>
+
+    <div id="touchControls">
+        <div class="touch-grid">
+            <div class="touch-btn up" id="btnUp">▲</div>
+            <div class="touch-btn left" id="btnLeft">◄</div>
+            <div class="touch-btn right" id="btnRight">►</div>
+            <div class="touch-btn down" id="btnDown">▼</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('snakeCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        const gameOverDisplay = document.getElementById('gameOver');
+        const restartButton = document.getElementById('restartButton');
+        const touchControls = document.getElementById('touchControls');
+        const gameContainer = document.getElementById('gameContainer');
+        const startScreen = document.getElementById('startScreen');
+        const startButton = document.getElementById('startButton');
+
+        let gameStarted = false;
+        let gameRunning = false;
+        let score = 0;
+        let gridSize = 20;
+        let tileCount;
+        let gameSpeed = 100; // milliseconds per frame
+
+        // Snake
+        let snake = [];
+        let headX = 10;
+        let headY = 10;
+        let velocityX = 0;
+        let velocityY = 0;
+        let nextVelocityX = 0;
+        let nextVelocityY = 0;
+
+        // Apple
+        let appleX = 15;
+        let appleY = 15;
+
+        // Start button handler
+        startButton.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            gameStarted = true;
+            gameRunning = true;
+            resetGame();
+            gameLoop();
+        });
+
+        // Detect touch capability
+        function isTouchDevice() {
+            return (('ontouchstart' in window) ||
+                    (navigator.maxTouchPoints > 0) ||
+                    (navigator.msMaxTouchPoints > 0));
+        }
+
+        // Show touch controls on touch devices or small screens
+        function updateTouchControls() {
+            if (isTouchDevice() || window.innerWidth <= 768) {
+                touchControls.classList.add('show');
+                gameContainer.classList.add('with-touch-controls');
+            } else {
+                touchControls.classList.remove('show');
+                gameContainer.classList.remove('with-touch-controls');
+            }
+        }
+
+        updateTouchControls();
+
+        // Responsive canvas sizing
+        function resizeCanvas() {
+            const maxSize = Math.min(600, window.innerWidth - 20, window.innerHeight - 350);
+            const canvasSize = Math.floor(maxSize / gridSize) * gridSize; // Make it divisible by gridSize
+            
+            canvas.width = canvasSize;
+            canvas.height = canvasSize;
+            tileCount = canvasSize / gridSize;
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowUp':
+                    if (velocityY === 0) {
+                        nextVelocityX = 0;
+                        nextVelocityY = -1;
+                    }
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                    if (velocityY === 0) {
+                        nextVelocityX = 0;
+                        nextVelocityY = 1;
+                    }
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                    if (velocityX === 0) {
+                        nextVelocityX = -1;
+                        nextVelocityY = 0;
+                    }
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    if (velocityX === 0) {
+                        nextVelocityX = 1;
+                        nextVelocityY = 0;
+                    }
+                    e.preventDefault();
+                    break;
+            }
+        });
+
+        // Touch controls
+        const touchButtons = {
+            up: document.getElementById('btnUp'),
+            down: document.getElementById('btnDown'),
+            left: document.getElementById('btnLeft'),
+            right: document.getElementById('btnRight')
+        };
+
+        // Prevent scrolling on touch
+        document.body.addEventListener('touchmove', (e) => {
+            if (e.target.closest('#touchControls')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        touchButtons.up.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (velocityY === 0) {
+                nextVelocityX = 0;
+                nextVelocityY = -1;
+            }
+        });
+
+        touchButtons.down.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (velocityY === 0) {
+                nextVelocityX = 0;
+                nextVelocityY = 1;
+            }
+        });
+
+        touchButtons.left.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (velocityX === 0) {
+                nextVelocityX = -1;
+                nextVelocityY = 0;
+            }
+        });
+
+        touchButtons.right.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (velocityX === 0) {
+                nextVelocityX = 1;
+                nextVelocityY = 0;
+            }
+        });
+
+        // Draw functions
+        function drawGame() {
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid (subtle)
+            ctx.strokeStyle = '#111';
+            for (let i = 0; i <= tileCount; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * gridSize, 0);
+                ctx.lineTo(i * gridSize, canvas.height);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, i * gridSize);
+                ctx.lineTo(canvas.width, i * gridSize);
+                ctx.stroke();
+            }
+
+            // Update velocity
+            velocityX = nextVelocityX;
+            velocityY = nextVelocityY;
+
+            // Move snake
+            headX += velocityX;
+            headY += velocityY;
+
+            // Check wall collision
+            if (headX < 0 || headX >= tileCount || headY < 0 || headY >= tileCount) {
+                endGame();
+                return;
+            }
+
+            // Check self collision
+            for (let i = 0; i < snake.length; i++) {
+                if (snake[i].x === headX && snake[i].y === headY) {
+                    endGame();
+                    return;
+                }
+            }
+
+            // Add new head
+            snake.push({ x: headX, y: headY });
+
+            // Check apple collision
+            if (headX === appleX && headY === appleY) {
+                score++;
+                scoreDisplay.textContent = score;
+                placeApple();
+                // Increase speed slightly
+                if (gameSpeed > 50) {
+                    gameSpeed = Math.max(50, gameSpeed - 2);
+                }
+            } else {
+                // Remove tail if didn't eat apple
+                snake.shift();
+            }
+
+            // Draw snake
+            for (let i = 0; i < snake.length; i++) {
+                const segment = snake[i];
+                if (i === snake.length - 1) {
+                    // Head
+                    ctx.fillStyle = '#0f6';
+                } else {
+                    // Body - gradient from bright to dark
+                    const brightness = 100 + (i / snake.length) * 155;
+                    ctx.fillStyle = `rgb(0, ${brightness}, ${brightness * 0.4})`;
+                }
+                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+            }
+
+            // Draw apple
+            ctx.fillStyle = '#f06';
+            ctx.beginPath();
+            ctx.arc(
+                appleX * gridSize + gridSize / 2,
+                appleY * gridSize + gridSize / 2,
+                gridSize / 2 - 2,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+        }
+
+        function placeApple() {
+            let validPosition = false;
+            while (!validPosition) {
+                appleX = Math.floor(Math.random() * tileCount);
+                appleY = Math.floor(Math.random() * tileCount);
+                
+                // Check if apple is not on snake
+                validPosition = true;
+                for (let segment of snake) {
+                    if (segment.x === appleX && segment.y === appleY) {
+                        validPosition = false;
+                        break;
+                    }
+                }
+                // Check if not on head
+                if (headX === appleX && headY === appleY) {
+                    validPosition = false;
+                }
+            }
+        }
+
+        function resetGame() {
+            snake = [];
+            headX = Math.floor(tileCount / 2);
+            headY = Math.floor(tileCount / 2);
+            velocityX = 0;
+            velocityY = 0;
+            nextVelocityX = 1;
+            nextVelocityY = 0;
+            score = 0;
+            gameSpeed = 100;
+            scoreDisplay.textContent = score;
+            
+            // Initialize snake with 3 segments
+            snake.push({ x: headX - 2, y: headY });
+            snake.push({ x: headX - 1, y: headY });
+            snake.push({ x: headX, y: headY });
+            
+            placeApple();
+        }
+
+        function endGame() {
+            gameRunning = false;
+            gameOverDisplay.textContent = `GAME OVER! Score: ${score}`;
+            gameOverDisplay.style.display = 'block';
+            restartButton.style.display = 'inline-block';
+        }
+
+        function restartGame() {
+            gameRunning = true;
+            gameStarted = true;
+            gameOverDisplay.style.display = 'none';
+            restartButton.style.display = 'none';
+            startScreen.classList.add('hidden');
+            resetGame();
+            gameLoop();
+        }
+
+        restartButton.addEventListener('click', restartGame);
+
+        // Game loop
+        let lastTime = 0;
+        function gameLoop(currentTime = 0) {
+            if (!gameRunning || !gameStarted) return;
+
+            const deltaTime = currentTime - lastTime;
+
+            if (deltaTime >= gameSpeed) {
+                drawGame();
+                lastTime = currentTime;
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            updateTouchControls();
+        });
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                resizeCanvas();
+                updateTouchControls();
+            }, 100);
+        });
+
+        // Initialize
+        resizeCanvas();
+        resetGame();
+        drawGame(); // Draw initial state
+    </script>
+</body>
+</html>
