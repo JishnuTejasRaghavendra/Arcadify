@@ -342,7 +342,11 @@
             const maxHeight = window.innerHeight - 400;
             
             canvas.width = maxWidth;
-            canvas.height = Math.min(600, Math.max(400, maxHeight));
+            canvas.height = Math.max(500, Math.min(600, maxHeight)); // Minimum 500px height
+            
+            // Reposition player when canvas resizes
+            player.y = canvas.height - 50; // Position player lower, closer to bottom
+            player.x = Math.min(player.x, canvas.width - player.width);
         }
 
         resizeCanvas();
@@ -350,7 +354,7 @@
         // Game objects
         let player = {
             x: canvas.width / 2 - 20,
-            y: canvas.height - 60,
+            y: canvas.height - 50, // Lower position for more space
             width: 40,
             height: 30,
             speed: 5
@@ -497,7 +501,7 @@
             const invaderHeight = 20;
             const padding = 10;
             const offsetX = (canvas.width - (cols * (invaderWidth + padding))) / 2;
-            const offsetY = 50;
+            const offsetY = 30; // Start higher up on screen
 
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
@@ -630,10 +634,10 @@
             if (moveDown) {
                 invaderDirection *= -1;
                 invaders.forEach(inv => {
-                    inv.y += 20;
+                    inv.y += 10; // Reduced from 20 to 10 for slower descent
                     
-                    // Check if invaders reached bottom
-                    if (inv.y + inv.height >= player.y) {
+                    // Check if invaders reached bottom (with more buffer space)
+                    if (inv.y + inv.height >= player.y - 20) {
                         endGame();
                     }
                 });
@@ -713,6 +717,7 @@
             restartButton.style.display = 'none';
             
             player.x = canvas.width / 2 - 20;
+            player.y = canvas.height - 50; // Ensure player is at bottom
             bullets = [];
             invaderBullets = [];
             createInvaders();
