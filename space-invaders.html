@@ -27,31 +27,31 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding: 5px;
-            padding-bottom: 20px;
+            padding: 3px;
+            padding-bottom: 15px;
             width: 100%;
         }
         #gameContainer.with-touch-controls {
-            padding-bottom: 180px;
+            padding-bottom: 130px;
         }
         h1 {
-            font-size: clamp(14px, 4vw, 24px);
-            margin: 10px 0 5px 0;
+            font-size: clamp(12px, 3vw, 20px);
+            margin: 5px 0 3px 0;
         }
         #gameInfo {
             display: flex;
             justify-content: center;
-            gap: clamp(15px, 4vw, 30px);
-            margin: 10px 0;
-            font-size: clamp(10px, 2.5vw, 14px);
+            gap: clamp(12px, 3vw, 25px);
+            margin: 5px 0;
+            font-size: clamp(9px, 2vw, 12px);
         }
         #gameInfo div {
             text-align: center;
         }
         #gameInfo .label {
-            font-size: clamp(8px, 2vw, 10px);
+            font-size: clamp(7px, 1.5vw, 9px);
             color: #aaa;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
         #canvasWrapper {
             width: 100%;
@@ -59,7 +59,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 10px 0;
+            margin: 5px 0;
         }
         canvas {
             border: 3px solid #0f0;
@@ -69,25 +69,25 @@
             height: auto;
         }
         #instructions {
-            font-size: clamp(8px, 2vw, 12px);
-            line-height: 1.8;
-            margin: 10px 0;
+            font-size: clamp(7px, 1.8vw, 11px);
+            line-height: 1.6;
+            margin: 5px 0;
             padding: 0 10px;
             text-align: center;
         }
         #gameOver {
             display: none;
-            font-size: clamp(12px, 3vw, 18px);
-            margin: 15px 0;
+            font-size: clamp(11px, 2.5vw, 16px);
+            margin: 10px 0;
             padding: 0 10px;
             text-align: center;
             color: #f06;
         }
         .button {
-            margin: 10px 5px;
-            padding: clamp(10px, 3vw, 15px) clamp(20px, 5vw, 30px);
+            margin: 8px 4px;
+            padding: clamp(8px, 2.5vw, 12px) clamp(16px, 4vw, 25px);
             font-family: 'Press Start 2P', cursive;
-            font-size: clamp(8px, 2vw, 12px);
+            font-size: clamp(7px, 1.8vw, 11px);
             border: none;
             cursor: pointer;
             text-decoration: none;
@@ -179,7 +179,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 120px;
+            height: 110px;
             z-index: 1000;
             background: rgba(0, 0, 0, 0.5);
             border-top: 3px solid rgba(0, 255, 0, 0.5);
@@ -217,51 +217,51 @@
         /* Responsive Breakpoints */
         @media (max-width: 768px) and (orientation: portrait) {
             #gameContainer.with-touch-controls {
-                padding-bottom: 130px;
+                padding-bottom: 120px;
             }
         }
         
         @media (max-width: 768px) and (orientation: landscape) {
             #touchControls.show {
-                height: 100px;
+                height: 90px;
             }
             #gameContainer.with-touch-controls {
-                padding-bottom: 110px;
-                padding-top: 5px;
+                padding-bottom: 100px;
+                padding-top: 3px;
             }
             h1 {
-                font-size: 14px;
-                margin: 5px 0;
+                font-size: 11px;
+                margin: 3px 0;
             }
             #gameInfo {
-                font-size: 10px;
+                font-size: 8px;
             }
             #instructions {
-                font-size: 7px;
-                line-height: 1.5;
-                margin: 5px 0;
+                font-size: 6px;
+                line-height: 1.4;
+                margin: 3px 0;
             }
         }
 
         @media (max-width: 480px) {
             #touchControls.show {
-                height: 110px;
+                height: 100px;
             }
             #gameContainer.with-touch-controls {
-                padding-bottom: 120px;
+                padding-bottom: 110px;
             }
         }
 
         @media (max-height: 600px) {
             #touchControls.show {
-                height: 90px;
+                height: 85px;
             }
             #gameContainer.with-touch-controls {
-                padding-bottom: 100px;
-                padding-top: 5px;
+                padding-bottom: 95px;
+                padding-top: 2px;
             }
             h1 {
-                margin: 5px 0;
+                margin: 3px 0;
             }
         }
     </style>
@@ -300,8 +300,7 @@
         </div>
         <div id="instructions">
             Desktop: ← → to move, SPACE to shoot<br>
-            Mobile: Use touch controls below<br>
-            Destroy all invaders!
+            Mobile: Use touch controls below
         </div>
         <div id="gameOver"></div>
         <button id="restartButton" class="button">RESTART</button>
@@ -340,8 +339,8 @@
         let player = {
             x: 0,
             y: 0,
-            width: 40,
-            height: 30,
+            width: 35,
+            height: 25,
             speed: 5
         };
 
@@ -349,26 +348,26 @@
         let invaders = [];
         let invaderBullets = [];
         let invaderDirection = 1;
-        let invaderSpeed = 1;
+        let invaderSpeed = 0.7; // Slower initial speed
         let invaderMoveDown = false;
 
-        // Responsive canvas sizing
+        // Responsive canvas sizing with HUGE vertical space on mobile
         function resizeCanvas() {
             const maxWidth = Math.min(800, window.innerWidth - 20);
-            // Account for: header + gameInfo + instructions + buttons + touch controls + padding
-            const uiHeight = window.innerWidth <= 768 ? 480 : 350;
+            // MUCH less UI overhead on mobile = taller canvas!
+            const uiHeight = window.innerWidth <= 768 ? 250 : 280;
             const maxHeight = window.innerHeight - uiHeight;
             
             canvas.width = maxWidth;
-            // Ensure minimum height of 400px for playable space
-            canvas.height = Math.max(400, Math.min(600, maxHeight));
+            // HUGE minimum height on mobile for massive vertical space!
+            canvas.height = Math.max(550, Math.min(700, maxHeight));
             
-            // Scale player size with canvas
-            player.width = Math.min(40, canvas.width / 15);
-            player.height = Math.min(30, canvas.height / 20);
+            // Scale player - smaller on mobile
+            player.width = canvas.width < 500 ? 28 : 35;
+            player.height = canvas.width < 500 ? 20 : 25;
             
-            // Reposition player when canvas resizes - keep at bottom with good spacing
-            player.y = canvas.height - player.height - 15;
+            // Player at very bottom
+            player.y = canvas.height - player.height - 8;
             player.x = canvas.width / 2 - player.width / 2;
         }
 
@@ -499,22 +498,27 @@
             if (gameRunning) shoot();
         });
 
-        // Create invaders
+        // Create invaders with AGGRESSIVE mobile spacing
         function createInvaders() {
             invaders = [];
-            const rows = canvas.height < 450 ? 4 : 5; // Fewer rows on small screens
-            const cols = 11;
-            const invaderWidth = Math.min(30, canvas.width / 15); // Scale with canvas
-            const invaderHeight = Math.min(20, canvas.height / 25); // Scale with canvas
-            const padding = Math.min(10, canvas.width / 40);
+            // ONLY 3 rows on mobile, 5 on desktop
+            const rows = canvas.width < 500 ? 3 : 5;
+            // Fewer columns on very small screens
+            const cols = canvas.width < 400 ? 7 : 11;
+            // TINY invaders on mobile!
+            const invaderWidth = canvas.width < 500 ? 15 : 30;
+            const invaderHeight = canvas.width < 500 ? 10 : 20;
+            // Tight padding on mobile
+            const padding = canvas.width < 500 ? 4 : 10;
             const offsetX = (canvas.width - (cols * (invaderWidth + padding))) / 2;
-            const offsetY = 20; // Start very high up on screen
+            // Start at absolute top!
+            const offsetY = 5;
 
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
                     invaders.push({
                         x: offsetX + col * (invaderWidth + padding),
-                        y: offsetY + row * (invaderHeight + padding),
+                        y: offsetY + row * (invaderHeight + padding + 2),
                         width: invaderWidth,
                         height: invaderHeight,
                         alive: true,
@@ -530,7 +534,7 @@
             ctx.fillRect(player.x, player.y, player.width, player.height);
             
             // Gun
-            ctx.fillRect(player.x + player.width / 2 - 2, player.y - 10, 4, 10);
+            ctx.fillRect(player.x + player.width / 2 - 2, player.y - 8, 4, 8);
         }
 
         // Draw invaders
@@ -540,10 +544,11 @@
                     ctx.fillStyle = '#0f0';
                     ctx.fillRect(inv.x, inv.y, inv.width, inv.height);
                     
-                    // Simple alien shape
+                    // Simple alien eyes
+                    const eyeSize = Math.max(2, inv.width / 8);
                     ctx.fillStyle = '#000';
-                    ctx.fillRect(inv.x + 5, inv.y + 5, 5, 5);
-                    ctx.fillRect(inv.x + 20, inv.y + 5, 5, 5);
+                    ctx.fillRect(inv.x + inv.width * 0.25, inv.y + inv.height * 0.3, eyeSize, eyeSize);
+                    ctx.fillRect(inv.x + inv.width * 0.65, inv.y + inv.height * 0.3, eyeSize, eyeSize);
                 }
             });
         }
@@ -552,7 +557,7 @@
         function shoot() {
             bullets.push({
                 x: player.x + player.width / 2 - 2,
-                y: player.y - 10,
+                y: player.y - 8,
                 width: 4,
                 height: 10,
                 speed: 7
@@ -640,19 +645,21 @@
 
             if (moveDown) {
                 invaderDirection *= -1;
-                const descendAmount = Math.max(5, canvas.height / 50); // Scale descent with canvas height
+                // SUPER slow descent on mobile - only 2 pixels!
+                const descendAmount = canvas.width < 500 ? 2 : 10;
                 invaders.forEach(inv => {
                     inv.y += descendAmount;
                     
-                    // Check if invaders reached bottom (with buffer space)
-                    if (inv.y + inv.height >= player.y - 30) {
+                    // Check if invaders reached bottom (with HUGE buffer)
+                    if (inv.y + inv.height >= player.y - 60) {
                         endGame();
                     }
                 });
             }
 
-            // Random invader shooting
-            if (Math.random() < 0.02) {
+            // Random invader shooting (less frequent on mobile)
+            const shootChance = canvas.width < 500 ? 0.015 : 0.02;
+            if (Math.random() < shootChance) {
                 const aliveInvaders = invaders.filter(i => i.alive);
                 if (aliveInvaders.length > 0) {
                     const shooter = aliveInvaders[Math.floor(Math.random() * aliveInvaders.length)];
@@ -681,7 +688,7 @@
         function nextLevel() {
             level++;
             levelDisplay.textContent = level;
-            invaderSpeed += 0.3;
+            invaderSpeed += 0.2; // Slower progression
             createInvaders();
             bullets = [];
             invaderBullets = [];
@@ -716,7 +723,7 @@
             score = 0;
             level = 1;
             lives = 3;
-            invaderSpeed = 1;
+            invaderSpeed = 0.7;
             invaderDirection = 1;
             scoreDisplay.textContent = score;
             levelDisplay.textContent = level;
@@ -725,7 +732,7 @@
             restartButton.style.display = 'none';
             
             player.x = canvas.width / 2 - player.width / 2;
-            player.y = canvas.height - player.height - 15;
+            player.y = canvas.height - player.height - 8;
             bullets = [];
             invaderBullets = [];
             createInvaders();
@@ -749,11 +756,17 @@
         window.addEventListener('resize', () => {
             resizeCanvas();
             updateTouchControls();
+            if (gameStarted) {
+                createInvaders(); // Recreate with new sizes
+            }
         });
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
                 resizeCanvas();
                 updateTouchControls();
+                if (gameStarted) {
+                    createInvaders();
+                }
             }, 100);
         });
 
