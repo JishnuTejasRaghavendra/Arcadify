@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Space Invaders - Pixelon</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: #000;
+            font-family: 'Press Start 2P', cursive;
+            color: white;
+            overflow-x: hidden;
+            position: relative;
+        }
+        #gameContainer {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 5px;
+            padding-bottom: 20px;
+            width: 100%;
+        }
+        #gameContainer.with-touch-controls {
+            padding-bottom: 140px;
+        }
+        h1 {
+            font-size: clamp(14px, 4vw, 24px);
+            margin: 10px 0 5px 0;
+        }
+        #gameInfo {
+            display: flex;
+            justify-content: center;
+            gap: clamp(15px, 4vw, 30px);
+            margin: 10px 0;
+            font-size: clamp(10px, 2.5vw, 14px);
+        }
+        #gameInfo div {
+            text-align: center;
+        }
+        #gameInfo .label {
+            font-size: clamp(8px, 2vw, 10px);
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        #canvasWrapper {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+        }
+        canvas {
+            border: 3px solid #0f0;
+            background: #000;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        #instructions {
+            font-size: clamp(8px, 2vw, 12px);
+            line-height: 1.8;
+            margin: 10px 0;
+            padding: 0 10px;
+            text-align: center;
+        }
+        #gameOver {
+            display: none;
+            font-size: clamp(12px, 3vw, 18px);
+            margin: 15px 0;
+            padding: 0 10px;
+            text-align: center;
+            color: #f06;
+        }
+        .button {
+            margin: 10px 5px;
+            padding: clamp(10px, 3vw, 15px) clamp(20px, 5vw, 30px);
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(8px, 2vw, 12px);
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        #backButton {
+            background: #f06;
+            color: white;
+        }
+        #backButton:hover {
+            background: #d04;
+        }
+        #restartButton {
+            display: none;
+            background: #0f0;
+            color: black;
+        }
+        #restartButton:hover {
+            background: #0d0;
+        }
+        
+        /* Start Screen */
+        #startScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        #startScreen.hidden {
+            display: none;
+        }
+        #startScreen h2 {
+            font-size: clamp(16px, 5vw, 32px);
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 0 20px;
+            color: #0f0;
+        }
+        #startButton {
+            padding: clamp(15px, 4vw, 20px) clamp(30px, 8vw, 50px);
+            font-family: 'Press Start 2P', cursive;
+            font-size: clamp(12px, 3vw, 16px);
+            background: #0f0;
+            color: black;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        #startButton:hover {
+            background: #0d0;
+        }
+        
+        /* Countdown Overlay */
+        #countdown {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1500;
+            font-size: clamp(60px, 20vw, 120px);
+            color: #0f0;
+            animation: pulse 0.5s ease-in-out;
+        }
+        #countdown.show {
+            display: flex;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        /* Touch Controls */
+        #touchControls {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 3px solid rgba(0, 255, 0, 0.5);
+        }
+        #touchControls.show {
+            display: block;
+        }
+        .touch-grid {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 3px;
+            padding: 5px;
+        }
+        .touch-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(24px, 8vw, 48px);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            color: white;
+            font-weight: bold;
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            transition: background 0.1s;
+        }
+        .touch-btn:active {
+            background: rgba(0, 255, 0, 0.6) !important;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 768px) and (orientation: portrait) {
+            #gameContainer.with-touch-controls {
+                padding-bottom: 130px;
+            }
+        }
+        
+        @media (max-width: 768px) and (orientation: landscape) {
+            #touchControls.show {
+                height: 100px;
+            }
+            #gameContainer.with-touch-controls {
+                padding-bottom: 110px;
+                padding-top: 5px;
+            }
+            h1 {
+                font-size: 14px;
+                margin: 5px 0;
+            }
+            #gameInfo {
+                font-size: 10px;
+            }
+            #instructions {
+                font-size: 7px;
+                line-height: 1.5;
+                margin: 5px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #touchControls.show {
+                height: 110px;
+            }
+            #gameContainer.with-touch-controls {
+                padding-bottom: 120px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            #touchControls.show {
+                height: 90px;
+            }
+            #gameContainer.with-touch-controls {
+                padding-bottom: 100px;
+                padding-top: 5px;
+            }
+            h1 {
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="startScreen">
+        <h2>👾 READY TO INVADE? 👾</h2>
+        <p style="font-size: clamp(10px, 2.5vw, 14px); margin: 10px 20px; text-align: center; line-height: 1.8;">
+            Defend Earth!<br>
+            Shoot the invaders!<br>
+            Don't let them land!
+        </p>
+        <button id="startButton">START GAME</button>
+    </div>
+
+    <div id="countdown"></div>
+
+    <div id="gameContainer">
+        <h1>👾 SPACE INVADERS</h1>
+        <div id="gameInfo">
+            <div>
+                <div class="label">SCORE</div>
+                <div id="score">0</div>
+            </div>
+            <div>
+                <div class="label">LEVEL</div>
+                <div id="level">1</div>
+            </div>
+            <div>
+                <div class="label">LIVES</div>
+                <div id="lives">3</div>
+            </div>
+        </div>
+        <div id="canvasWrapper">
+            <canvas id="invadersCanvas"></canvas>
+        </div>
+        <div id="instructions">
+            Desktop: ← → to move, SPACE to shoot<br>
+            Mobile: Use touch controls below<br>
+            Destroy all invaders!
+        </div>
+        <div id="gameOver"></div>
+        <button id="restartButton" class="button">RESTART</button>
+        <a href="index.html" id="backButton" class="button">← BACK</a>
+    </div>
+
+    <div id="touchControls">
+        <div class="touch-grid">
+            <div class="touch-btn" id="btnLeft">◄</div>
+            <div class="touch-btn" id="btnShoot">🚀</div>
+            <div class="touch-btn" id="btnRight">►</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('invadersCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        const levelDisplay = document.getElementById('level');
+        const livesDisplay = document.getElementById('lives');
+        const gameOverDisplay = document.getElementById('gameOver');
+        const restartButton = document.getElementById('restartButton');
+        const touchControls = document.getElementById('touchControls');
+        const gameContainer = document.getElementById('gameContainer');
+        const startScreen = document.getElementById('startScreen');
+        const startButton = document.getElementById('startButton');
+        const countdownDisplay = document.getElementById('countdown');
+
+        let gameStarted = false;
+        let gameRunning = false;
+        let score = 0;
+        let level = 1;
+        let lives = 3;
+
+        // Responsive canvas sizing
+        function resizeCanvas() {
+            const maxWidth = Math.min(800, window.innerWidth - 20);
+            const maxHeight = window.innerHeight - 400;
+            
+            canvas.width = maxWidth;
+            canvas.height = Math.min(600, Math.max(400, maxHeight));
+        }
+
+        resizeCanvas();
+
+        // Game objects
+        let player = {
+            x: canvas.width / 2 - 20,
+            y: canvas.height - 60,
+            width: 40,
+            height: 30,
+            speed: 5
+        };
+
+        let bullets = [];
+        let invaders = [];
+        let invaderBullets = [];
+        let invaderDirection = 1;
+        let invaderSpeed = 1;
+        let invaderMoveDown = false;
+
+        // Controls
+        let keys = {};
+        let leftPressed = false;
+        let rightPressed = false;
+
+        // Countdown function
+        function startCountdown(callback) {
+            let count = 3;
+            countdownDisplay.textContent = count;
+            countdownDisplay.classList.add('show');
+            
+            const countInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownDisplay.textContent = count;
+                } else if (count === 0) {
+                    countdownDisplay.textContent = 'GO!';
+                } else {
+                    clearInterval(countInterval);
+                    countdownDisplay.classList.remove('show');
+                    callback();
+                }
+            }, 1000);
+        }
+
+        // Start button handler
+        startButton.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            gameStarted = true;
+            resetGame();
+            startCountdown(() => {
+                gameRunning = true;
+                gameLoop();
+            });
+        });
+
+        // Detect touch capability
+        function isTouchDevice() {
+            return (('ontouchstart' in window) ||
+                    (navigator.maxTouchPoints > 0) ||
+                    (navigator.msMaxTouchPoints > 0));
+        }
+
+        // Show touch controls
+        function updateTouchControls() {
+            if (isTouchDevice() || window.innerWidth <= 768) {
+                touchControls.classList.add('show');
+                gameContainer.classList.add('with-touch-controls');
+            } else {
+                touchControls.classList.remove('show');
+                gameContainer.classList.remove('with-touch-controls');
+            }
+        }
+
+        updateTouchControls();
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if (e.key === ' ' && gameRunning) {
+                shoot();
+                e.preventDefault();
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Touch controls
+        const touchButtons = {
+            left: document.getElementById('btnLeft'),
+            right: document.getElementById('btnRight'),
+            shoot: document.getElementById('btnShoot')
+        };
+
+        // Prevent scrolling
+        document.body.addEventListener('touchmove', (e) => {
+            if (e.target.closest('#touchControls')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        let leftTouchInterval, rightTouchInterval;
+
+        touchButtons.left.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            leftPressed = true;
+            leftTouchInterval = setInterval(() => {
+                if (gameRunning && player.x > 0) {
+                    player.x -= player.speed;
+                }
+            }, 16);
+        });
+
+        touchButtons.left.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            leftPressed = false;
+            clearInterval(leftTouchInterval);
+        });
+
+        touchButtons.right.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            rightPressed = true;
+            rightTouchInterval = setInterval(() => {
+                if (gameRunning && player.x < canvas.width - player.width) {
+                    player.x += player.speed;
+                }
+            }, 16);
+        });
+
+        touchButtons.right.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            rightPressed = false;
+            clearInterval(rightTouchInterval);
+        });
+
+        touchButtons.shoot.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameRunning) shoot();
+        });
+
+        // Create invaders
+        function createInvaders() {
+            invaders = [];
+            const rows = 5;
+            const cols = 11;
+            const invaderWidth = 30;
+            const invaderHeight = 20;
+            const padding = 10;
+            const offsetX = (canvas.width - (cols * (invaderWidth + padding))) / 2;
+            const offsetY = 50;
+
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    invaders.push({
+                        x: offsetX + col * (invaderWidth + padding),
+                        y: offsetY + row * (invaderHeight + padding),
+                        width: invaderWidth,
+                        height: invaderHeight,
+                        alive: true,
+                        points: (4 - row) * 10 + 10
+                    });
+                }
+            }
+        }
+
+        // Draw player
+        function drawPlayer() {
+            ctx.fillStyle = '#0f0';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            // Gun
+            ctx.fillRect(player.x + player.width / 2 - 2, player.y - 10, 4, 10);
+        }
+
+        // Draw invaders
+        function drawInvaders() {
+            invaders.forEach(inv => {
+                if (inv.alive) {
+                    ctx.fillStyle = '#0f0';
+                    ctx.fillRect(inv.x, inv.y, inv.width, inv.height);
+                    
+                    // Simple alien shape
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(inv.x + 5, inv.y + 5, 5, 5);
+                    ctx.fillRect(inv.x + 20, inv.y + 5, 5, 5);
+                }
+            });
+        }
+
+        // Shoot bullet
+        function shoot() {
+            bullets.push({
+                x: player.x + player.width / 2 - 2,
+                y: player.y - 10,
+                width: 4,
+                height: 10,
+                speed: 7
+            });
+        }
+
+        // Update bullets
+        function updateBullets() {
+            bullets = bullets.filter(b => {
+                b.y -= b.speed;
+                return b.y > 0;
+            });
+
+            // Player bullets
+            bullets.forEach((bullet, bIndex) => {
+                invaders.forEach((inv, iIndex) => {
+                    if (inv.alive &&
+                        bullet.x < inv.x + inv.width &&
+                        bullet.x + bullet.width > inv.x &&
+                        bullet.y < inv.y + inv.height &&
+                        bullet.y + bullet.height > inv.y) {
+                        
+                        inv.alive = false;
+                        bullets.splice(bIndex, 1);
+                        score += inv.points;
+                        scoreDisplay.textContent = score;
+                        
+                        // Check level complete
+                        if (invaders.every(i => !i.alive)) {
+                            nextLevel();
+                        }
+                    }
+                });
+            });
+
+            // Invader bullets
+            invaderBullets = invaderBullets.filter(b => {
+                b.y += b.speed;
+                return b.y < canvas.height;
+            });
+
+            invaderBullets.forEach((bullet, index) => {
+                if (bullet.x < player.x + player.width &&
+                    bullet.x + bullet.width > player.x &&
+                    bullet.y < player.y + player.height &&
+                    bullet.y + bullet.height > player.y) {
+                    
+                    invaderBullets.splice(index, 1);
+                    lives--;
+                    livesDisplay.textContent = lives;
+                    
+                    if (lives <= 0) {
+                        endGame();
+                    }
+                }
+            });
+        }
+
+        // Draw bullets
+        function drawBullets() {
+            ctx.fillStyle = '#0f0';
+            bullets.forEach(b => {
+                ctx.fillRect(b.x, b.y, b.width, b.height);
+            });
+            
+            ctx.fillStyle = '#f00';
+            invaderBullets.forEach(b => {
+                ctx.fillRect(b.x, b.y, b.width, b.height);
+            });
+        }
+
+        // Update invaders
+        function updateInvaders() {
+            let moveDown = false;
+            
+            invaders.forEach(inv => {
+                if (inv.alive) {
+                    inv.x += invaderDirection * invaderSpeed;
+                    
+                    if (inv.x <= 0 || inv.x + inv.width >= canvas.width) {
+                        moveDown = true;
+                    }
+                }
+            });
+
+            if (moveDown) {
+                invaderDirection *= -1;
+                invaders.forEach(inv => {
+                    inv.y += 20;
+                    
+                    // Check if invaders reached bottom
+                    if (inv.y + inv.height >= player.y) {
+                        endGame();
+                    }
+                });
+            }
+
+            // Random invader shooting
+            if (Math.random() < 0.02) {
+                const aliveInvaders = invaders.filter(i => i.alive);
+                if (aliveInvaders.length > 0) {
+                    const shooter = aliveInvaders[Math.floor(Math.random() * aliveInvaders.length)];
+                    invaderBullets.push({
+                        x: shooter.x + shooter.width / 2 - 2,
+                        y: shooter.y + shooter.height,
+                        width: 4,
+                        height: 10,
+                        speed: 3
+                    });
+                }
+            }
+        }
+
+        // Update player
+        function updatePlayer() {
+            if (keys['ArrowLeft'] && player.x > 0) {
+                player.x -= player.speed;
+            }
+            if (keys['ArrowRight'] && player.x < canvas.width - player.width) {
+                player.x += player.speed;
+            }
+        }
+
+        // Next level
+        function nextLevel() {
+            level++;
+            levelDisplay.textContent = level;
+            invaderSpeed += 0.3;
+            createInvaders();
+            bullets = [];
+            invaderBullets = [];
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (!gameRunning || !gameStarted) return;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            updatePlayer();
+            updateInvaders();
+            updateBullets();
+
+            drawPlayer();
+            drawInvaders();
+            drawBullets();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            gameOverDisplay.textContent = `GAME OVER! Score: ${score}`;
+            gameOverDisplay.style.display = 'block';
+            restartButton.style.display = 'inline-block';
+        }
+
+        function resetGame() {
+            score = 0;
+            level = 1;
+            lives = 3;
+            invaderSpeed = 1;
+            invaderDirection = 1;
+            scoreDisplay.textContent = score;
+            levelDisplay.textContent = level;
+            livesDisplay.textContent = lives;
+            gameOverDisplay.style.display = 'none';
+            restartButton.style.display = 'none';
+            
+            player.x = canvas.width / 2 - 20;
+            bullets = [];
+            invaderBullets = [];
+            createInvaders();
+        }
+
+        function restartGame() {
+            gameStarted = true;
+            startScreen.classList.add('hidden');
+            gameOverDisplay.style.display = 'none';
+            restartButton.style.display = 'none';
+            resetGame();
+            startCountdown(() => {
+                gameRunning = true;
+                gameLoop();
+            });
+        }
+
+        restartButton.addEventListener('click', restartGame);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            updateTouchControls();
+        });
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                resizeCanvas();
+                updateTouchControls();
+            }, 100);
+        });
+
+        // Initialize
+        createInvaders();
+    </script>
+</body>
+</html>
