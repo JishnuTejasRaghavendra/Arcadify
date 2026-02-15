@@ -55,11 +55,11 @@ Contributions are welcome! Whether it's:
 
 ## 📋 Roadmap
 
-- [ ] Create main landing page
-- [ ] Add first game
-- [ ] Implement game selection menu
-- [ ] Add score tracking
-- [ ] Mobile optimization
+- [x] Create main landing page
+- [x] Add first game - Pong
+- [x] Add second game - Snake
+- [x] Add third game - Breakout
+- [x] Add fourth game - Tetris
 - [ ] Dark/Light mode toggle
 - [ ] More games!
 
