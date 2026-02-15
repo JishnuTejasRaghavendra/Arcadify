@@ -336,25 +336,10 @@
         let level = 1;
         let lives = 3;
 
-        // Responsive canvas sizing
-        function resizeCanvas() {
-            const maxWidth = Math.min(800, window.innerWidth - 20);
-            const maxHeight = window.innerHeight - 400;
-            
-            canvas.width = maxWidth;
-            canvas.height = Math.max(500, Math.min(600, maxHeight)); // Minimum 500px height
-            
-            // Reposition player when canvas resizes
-            player.y = canvas.height - 50; // Position player lower, closer to bottom
-            player.x = Math.min(player.x, canvas.width - player.width);
-        }
-
-        resizeCanvas();
-
         // Game objects
         let player = {
-            x: canvas.width / 2 - 20,
-            y: canvas.height - 50, // Lower position for more space
+            x: 0,
+            y: 0,
             width: 40,
             height: 30,
             speed: 5
@@ -366,6 +351,21 @@
         let invaderDirection = 1;
         let invaderSpeed = 1;
         let invaderMoveDown = false;
+
+        // Responsive canvas sizing
+        function resizeCanvas() {
+            const maxWidth = Math.min(800, window.innerWidth - 20);
+            const maxHeight = window.innerHeight - 400;
+            
+            canvas.width = maxWidth;
+            canvas.height = Math.max(500, Math.min(600, maxHeight)); // Minimum 500px height
+            
+            // Reposition player when canvas resizes
+            player.y = canvas.height - 50; // Position player lower, closer to bottom
+            player.x = canvas.width / 2 - 20;
+        }
+
+        resizeCanvas();
 
         // Controls
         let keys = {};
