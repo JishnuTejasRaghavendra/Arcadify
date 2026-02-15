@@ -32,7 +32,7 @@
             width: 100%;
         }
         #gameContainer.with-touch-controls {
-            padding-bottom: 140px;
+            padding-bottom: 180px;
         }
         h1 {
             font-size: clamp(14px, 4vw, 24px);
@@ -355,14 +355,21 @@
         // Responsive canvas sizing
         function resizeCanvas() {
             const maxWidth = Math.min(800, window.innerWidth - 20);
-            const maxHeight = window.innerHeight - 400;
+            // Account for: header + gameInfo + instructions + buttons + touch controls + padding
+            const uiHeight = window.innerWidth <= 768 ? 480 : 350;
+            const maxHeight = window.innerHeight - uiHeight;
             
             canvas.width = maxWidth;
-            canvas.height = Math.max(500, Math.min(600, maxHeight)); // Minimum 500px height
+            // Ensure minimum height of 400px for playable space
+            canvas.height = Math.max(400, Math.min(600, maxHeight));
             
-            // Reposition player when canvas resizes
-            player.y = canvas.height - 50; // Position player lower, closer to bottom
-            player.x = canvas.width / 2 - 20;
+            // Scale player size with canvas
+            player.width = Math.min(40, canvas.width / 15);
+            player.height = Math.min(30, canvas.height / 20);
+            
+            // Reposition player when canvas resizes - keep at bottom with good spacing
+            player.y = canvas.height - player.height - 15;
+            player.x = canvas.width / 2 - player.width / 2;
         }
 
         resizeCanvas();
@@ -495,13 +502,13 @@
         // Create invaders
         function createInvaders() {
             invaders = [];
-            const rows = 5;
+            const rows = canvas.height < 450 ? 4 : 5; // Fewer rows on small screens
             const cols = 11;
-            const invaderWidth = 30;
-            const invaderHeight = 20;
-            const padding = 10;
+            const invaderWidth = Math.min(30, canvas.width / 15); // Scale with canvas
+            const invaderHeight = Math.min(20, canvas.height / 25); // Scale with canvas
+            const padding = Math.min(10, canvas.width / 40);
             const offsetX = (canvas.width - (cols * (invaderWidth + padding))) / 2;
-            const offsetY = 30; // Start higher up on screen
+            const offsetY = 20; // Start very high up on screen
 
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
@@ -511,7 +518,7 @@
                         width: invaderWidth,
                         height: invaderHeight,
                         alive: true,
-                        points: (4 - row) * 10 + 10
+                        points: (rows - 1 - row) * 10 + 10
                     });
                 }
             }
@@ -633,11 +640,12 @@
 
             if (moveDown) {
                 invaderDirection *= -1;
+                const descendAmount = Math.max(5, canvas.height / 50); // Scale descent with canvas height
                 invaders.forEach(inv => {
-                    inv.y += 10; // Reduced from 20 to 10 for slower descent
+                    inv.y += descendAmount;
                     
-                    // Check if invaders reached bottom (with more buffer space)
-                    if (inv.y + inv.height >= player.y - 20) {
+                    // Check if invaders reached bottom (with buffer space)
+                    if (inv.y + inv.height >= player.y - 30) {
                         endGame();
                     }
                 });
@@ -716,8 +724,8 @@
             gameOverDisplay.style.display = 'none';
             restartButton.style.display = 'none';
             
-            player.x = canvas.width / 2 - 20;
-            player.y = canvas.height - 50; // Ensure player is at bottom
+            player.x = canvas.width / 2 - player.width / 2;
+            player.y = canvas.height - player.height - 15;
             bullets = [];
             invaderBullets = [];
             createInvaders();
