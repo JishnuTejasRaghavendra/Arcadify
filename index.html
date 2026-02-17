@@ -129,85 +129,38 @@
             pointer-events: none;
         }
         
-        /* Shooting Star Line - FIXED position, BIGGER and BRIGHTER */
-        .shooting-star {
+        /* Shooting Star Canvas */
+        #shootingStarCanvas {
             position: fixed;
-            height: 3px;
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 1), rgba(255, 255, 255, 1), transparent);
-            box-shadow: 0 0 15px 4px rgba(255, 255, 255, 0.9);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
             z-index: 5;
         }
         
         @keyframes shootDown {
-            0% {
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-            }
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
         }
         
-        /* Floating Text Animation - Individual words */
+        /* Floating Text Animation - Whole thing floats together */
         .floating-text {
             position: relative;
             z-index: 1;
+            animation: floatAll 6s infinite ease-in-out;
+        }
+        
+        @keyframes floatAll {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-18px); }
         }
         
         .floating-text .word {
-            display: inline-block;
-            position: relative;
-        }
-        
-        .word1 {
-            animation: floatWord1 5s infinite ease-in-out;
-        }
-        
-        .word2 {
-            animation: floatWord2 7s infinite ease-in-out;
-        }
-        
-        .word3 {
-            animation: floatWord3 6s infinite ease-in-out;
-        }
-        
-        @keyframes floatWord1 {
-            0%, 100% {
-                transform: translateY(0px);
-            }
-            50% {
-                transform: translateY(-12px);
-            }
-        }
-        
-        @keyframes floatWord2 {
-            0%, 100% {
-                transform: translateY(0px);
-            }
-            40% {
-                transform: translateY(8px);
-            }
-            80% {
-                transform: translateY(-15px);
-            }
-        }
-        
-        @keyframes floatWord3 {
-            0%, 100% {
-                transform: translateY(0px);
-            }
-            30% {
-                transform: translateY(-10px);
-            }
-            70% {
-                transform: translateY(5px);
-            }
+            display: inline;
         }
         
         .hero > * {
@@ -276,9 +229,11 @@
         }
         
         .game-card {
-            background: #111;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             padding: 60px 30px;
-            border: 2px solid #333;
+            border: 1px solid rgba(255, 255, 255, 0.15);
             font-family: 'Bitcount Grid Double', monospace;
             font-size: clamp(22px, 4vw, 32px);
             text-align: center;
@@ -287,8 +242,10 @@
         }
         
         .game-card:hover {
-            border-color: #fff;
-            background: #1a1a1a;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
         }
         
         a.game-card {
@@ -360,6 +317,7 @@
     </style>
 </head>
 <body>
+    <canvas id="shootingStarCanvas"></canvas>
     <div class="stars-background"></div>
     
     <header>
@@ -456,43 +414,108 @@
         // Also run once on page load (after a short delay)
         setTimeout(flickerLetters, 1000);
 
-        // SHOOTING STARS - Random lines every 8 seconds across FULL VIEWPORT
-        function createShootingStar() {
-            const container = document.querySelector('.stars-background');
-            
-            // Pick random start point across ENTIRE viewport
-            const startX = Math.random() * (window.innerWidth - 200) + 100;
-            const startY = Math.random() * (window.innerHeight - 200) + 100;
-            
-            // Calculate end point at ~30 degrees downward
-            const distance = 80 + Math.random() * 60; // 80-140px length (LONGER)
-            const angle = 30 + (Math.random() * 20 - 10); // 20-40 degrees
-            const angleRad = angle * Math.PI / 180;
-            
-            const endX = startX + distance * Math.cos(angleRad);
-            const endY = startY + distance * Math.sin(angleRad);
-            
-            // Calculate line length and rotation
-            const lineLength = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-            const rotation = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
-            
-            // Create shooting star element
-            const star = document.createElement('div');
-            star.className = 'shooting-star';
-            star.style.width = lineLength + 'px';
-            star.style.left = startX + 'px';
-            star.style.top = startY + 'px';
-            star.style.transform = `rotate(${rotation}deg)`;
-            star.style.transformOrigin = '0 0';
-            star.style.animation = 'shootDown 2s ease-out forwards';
-            
-            container.appendChild(star);
-            
-            // Remove after animation completes
-            setTimeout(() => {
-                star.remove();
-            }, 2000);
+        // ---- SHOOTING STAR CANVAS ----
+        const ssCanvas = document.getElementById('shootingStarCanvas');
+        const ssCtx = ssCanvas.getContext('2d');
+
+        function resizeCanvas() {
+            ssCanvas.width = window.innerWidth;
+            ssCanvas.height = window.innerHeight;
         }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Active shooting stars
+        const shootingStars = [];
+
+        function spawnShootingStar() {
+            // Random start anywhere on screen, with margin
+            const startX = Math.random() * window.innerWidth;
+            const startY = Math.random() * window.innerHeight * 0.6; // Upper 60% of screen
+
+            // Angle ~30 degrees downward (20-40 deg variance)
+            const angleDeg = 20 + Math.random() * 20;
+            const angleRad = angleDeg * Math.PI / 180;
+
+            // Travel distance
+            const totalDist = 120 + Math.random() * 100; // 120–220px
+
+            shootingStars.push({
+                x: startX,
+                y: startY,
+                angleRad,
+                totalDist,
+                progress: 0,  // 0 to 1
+                speed: 0.012 + Math.random() * 0.008, // how fast it moves (per frame)
+                tailLength: 80 + Math.random() * 60, // tail length in px
+            });
+        }
+
+        function drawShootingStars() {
+            // Don't clear the whole canvas - we draw each frame fresh
+            ssCtx.clearRect(0, 0, ssCanvas.width, ssCanvas.height);
+
+            for (let i = shootingStars.length - 1; i >= 0; i--) {
+                const s = shootingStars[i];
+                s.progress += s.speed;
+
+                if (s.progress >= 1.2) {
+                    shootingStars.splice(i, 1);
+                    continue;
+                }
+
+                // Head position (moves from start toward end)
+                const travelProgress = Math.min(s.progress, 1);
+                const headX = s.x + Math.cos(s.angleRad) * s.totalDist * travelProgress;
+                const headY = s.y + Math.sin(s.angleRad) * s.totalDist * travelProgress;
+
+                // Tail starts behind head
+                const tailStartProgress = Math.max(0, travelProgress - (s.tailLength / s.totalDist));
+                const tailX = s.x + Math.cos(s.angleRad) * s.totalDist * tailStartProgress;
+                const tailY = s.y + Math.sin(s.angleRad) * s.totalDist * tailStartProgress;
+
+                // Overall opacity - fade in at start, fade out at end
+                let opacity = 1;
+                if (s.progress < 0.1) opacity = s.progress / 0.1;
+                else if (s.progress > 0.85) opacity = 1 - (s.progress - 0.85) / 0.35;
+
+                // Draw tail as gradient line (tail=transparent, head=bright golden white)
+                const gradient = ssCtx.createLinearGradient(tailX, tailY, headX, headY);
+                gradient.addColorStop(0, `rgba(255, 200, 100, 0)`);
+                gradient.addColorStop(0.4, `rgba(255, 210, 120, ${opacity * 0.3})`);
+                gradient.addColorStop(1, `rgba(255, 240, 200, ${opacity})`);
+
+                ssCtx.beginPath();
+                ssCtx.moveTo(tailX, tailY);
+                ssCtx.lineTo(headX, headY);
+                ssCtx.strokeStyle = gradient;
+                ssCtx.lineWidth = 2.5;
+                ssCtx.lineCap = 'round';
+                ssCtx.stroke();
+
+                // Draw glowing head
+                const headGlow = ssCtx.createRadialGradient(headX, headY, 0, headX, headY, 10);
+                headGlow.addColorStop(0, `rgba(255, 255, 220, ${opacity})`);
+                headGlow.addColorStop(0.4, `rgba(255, 200, 100, ${opacity * 0.6})`);
+                headGlow.addColorStop(1, `rgba(255, 150, 50, 0)`);
+
+                ssCtx.beginPath();
+                ssCtx.arc(headX, headY, 10, 0, Math.PI * 2);
+                ssCtx.fillStyle = headGlow;
+                ssCtx.fill();
+            }
+
+            requestAnimationFrame(drawShootingStars);
+        }
+
+        // Start animation loop
+        drawShootingStars();
+
+        // Spawn a shooting star every 8 seconds
+        setInterval(spawnShootingStar, 8000);
+
+        // First one after 2 seconds
+        setTimeout(spawnShootingStar, 2000);
         
         // Generate 200 stars across the ENTIRE page
         function generateStars() {
@@ -512,12 +535,6 @@
         
         // Initialize stars on page load
         generateStars();
-        
-        // Create shooting star every 8 seconds
-        setInterval(createShootingStar, 8000);
-        
-        // Create first one after 2 seconds
-        setTimeout(createShootingStar, 2000);
     </script>
 </body>
 </html>
